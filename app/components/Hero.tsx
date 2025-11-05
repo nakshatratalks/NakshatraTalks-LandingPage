@@ -35,10 +35,10 @@ function CoinCard({ label, imgSrc }: CoinCardProps) {
 
 export default function Hero() {
     return (
-        <section className="relative min-h-[100vh] sm:min-h-screen pb-24 sm:pb-0 overflow-hidden">
+        <section className="relative min-h-[600px] sm:min-h-[700px] overflow-hidden">
             {/* Background: gradient fallback */}
-            <div className="absolute inset-0 -z-10">
-                <div className="absolute inset-0 bg-[radial-gradient(60%_60%_at_50%_50%,#F5F0D8_0%,#F2E0A4_35%,#F2D276_60%,#F1C95E_100%)]" />
+            <div className="absolute inset-0 z-0">
+                <div className="absolute inset-0 bg-[radial-gradient(60%_60%_at_50%_50%,#E5E7EB_0%,#F6E095_100%)]" />
             </div>
 
             {/* Decorative stars and ellipses per Figma clusters (top-left / top-right) */}
@@ -56,7 +56,7 @@ export default function Hero() {
             <img src="/assets/hero-icons/Ellipse 12.svg" alt="" className="pointer-events-none select-none absolute top-32 right-28 w-3 opacity-80 sm:top-16 sm:right-36 sm:w-4 sm:opacity-100 drop-shadow-[0_0_1px_rgba(255,255,255,0.6)]" />
 
             {/* Content grid */}
-            <div className="mx-auto max-w-6xl px-5 sm:px-8 pt-10 sm:pt-14 md:pt-16">
+            <div className="relative z-10 mx-auto max-w-6xl px-5 sm:px-8 pt-10 sm:pt-14 md:pt-16">
                 <div className="grid grid-cols-1 md:grid-cols-3 items-start md:items-center gap-6 md:gap-10">
                     {/* Left copy (headline + subtext + chatbot) */}
                     <div className="order-[0] md:order-[0] md:col-start-1 md:row-start-1">

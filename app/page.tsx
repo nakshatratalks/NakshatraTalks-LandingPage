@@ -1,6 +1,7 @@
 import Hero from "./components/Hero";
 import DailyHoroscope from "./components/DailyHoroscope";
 import OurJourney from "./components/OurJourney";
+import ContactFooter from "./components/ContactFooter";
 
 export default function Home() {
   return (
@@ -9,6 +10,7 @@ export default function Home() {
         <Hero />
         <DailyHoroscope />
         <OurJourney />
+        <ContactFooter />
       </main>
     </div>
   );

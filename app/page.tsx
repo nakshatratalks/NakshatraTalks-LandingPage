@@ -3,6 +3,7 @@ import Hero from "./components/Hero";
 import DailyHoroscope from "./components/DailyHoroscope";
 import OurJourney from "./components/OurJourney";
 import ContactFooter from "./components/ContactFooter";
+import WhatsAppButton from "./components/WhatsAppButton";
 
 function Home() {
   return (
@@ -21,6 +22,7 @@ function Home() {
           <ContactFooter />
         </Suspense>
       </main>
+      <WhatsAppButton />
     </div>
   );
 }

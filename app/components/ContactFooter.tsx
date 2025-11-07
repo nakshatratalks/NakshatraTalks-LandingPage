@@ -1,5 +1,7 @@
 "use client";
+
 import Image from "next/image";
+import { useState, type ChangeEvent, type FormEvent } from "react";
 import { useLanguage } from "../hooks/useLanguage";
 
 const translations = {
@@ -12,6 +14,12 @@ const translations = {
         yourEmail: "Your Email",
         yourMessage: "Your Message",
         sendMessage: "SEND MESSAGE",
+        emailRequired: "Email is required",
+        messageRequired: "Message is required",
+        invalidEmail: "Please enter a valid email address",
+        submitSuccessTitle: "Message sent successfully",
+        submitSuccessDescription: "Thank you for reaching out. Our team will get back to you soon.",
+        submitError: "We couldn't send your message. Please try again.",
         tagline: "Your trusted platform for authentic astrological guidance and spiritual wisdom.",
         services: "Services",
         chatAstrologer: "Chat with Astrologer",
@@ -34,6 +42,12 @@ const translations = {
         yourEmail: "உங்கள் மின்னஞ்சல்",
         yourMessage: "உங்கள் செய்தி",
         sendMessage: "செய்தியை அனுப்பவும்",
+        emailRequired: "மின்னஞ்சலை உள்ளிடவும்",
+        messageRequired: "செய்தியை உள்ளிடவும்",
+        invalidEmail: "செல்லுபடியான மின்னஞ்சல் முகவரியை வழங்கவும்",
+        submitSuccessTitle: "செய்தி வெற்றிகரமாக அனுப்பப்பட்டது",
+        submitSuccessDescription: "எங்களை தொடர்பு கொண்டதற்கு நன்றி. எங்கள் குழு விரைவில் தொடர்பு கொள்ளும்.",
+        submitError: "செய்தியை அனுப்ப முடியவில்லை. தயவுசெய்து மீண்டும் முயற்சிக்கவும்.",
         tagline: "நம்பகமான ஜோதிட வழிகாட்டுதல் மற்றும் ஆன்மீக ஞானத்திற்கான உங்கள் நம்பகமான தளம்.",
         services: "சேவைகள்",
         chatAstrologer: "ஜோதிடருடன் அரட்டை",
@@ -52,6 +66,73 @@ const translations = {
 function ContactFooter() {
     const lang = useLanguage();
     const t = translations[lang as keyof typeof translations] ?? translations.en;
+    const [formData, setFormData] = useState({ name: "", email: "", message: "" });
+    const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+    const [errorMessage, setErrorMessage] = useState<string | null>(null);
+
+    const handleChange = (field: "name" | "email" | "message") => (event: ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        setFormData((prev) => ({ ...prev, [field]: event.target.value }));
+        if (status !== "idle") {
+            setStatus("idle");
+        }
+        if (errorMessage) {
+            setErrorMessage(null);
+        }
+    };
+
+    const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
+        event.preventDefault();
+
+        const trimmedName = formData.name.trim();
+        const trimmedEmail = formData.email.trim();
+        const trimmedMessage = formData.message.trim();
+
+        if (!trimmedEmail) {
+            setErrorMessage(t.emailRequired);
+            return;
+        }
+
+        const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+        if (!emailRegex.test(trimmedEmail)) {
+            setErrorMessage(t.invalidEmail);
+            return;
+        }
+
+        if (!trimmedMessage) {
+            setErrorMessage(t.messageRequired);
+            return;
+        }
+
+        setStatus("loading");
+        setErrorMessage(null);
+
+        try {
+            const response = await fetch("/api/contact", {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    name: trimmedName,
+                    email: trimmedEmail,
+                    message: trimmedMessage,
+                    language: lang,
+                }),
+            });
+
+            const data = (await response.json().catch(() => null)) as { error?: string } | null;
+
+            if (!response.ok) {
+                const apiError = data?.error || t.submitError;
+                throw new Error(apiError);
+            }
+
+            setFormData({ name: "", email: "", message: "" });
+            setStatus("success");
+        } catch (error) {
+            const message = error instanceof Error ? error.message : t.submitError;
+            setErrorMessage(message || t.submitError);
+            setStatus("error");
+        }
+    };
     
     return (
         <section id="contact" className="relative overflow-hidden scroll-mt-16">
@@ -100,13 +181,21 @@ function ContactFooter() {
                     {/* Contact Card */}
                     <div className="lg:col-span-2 flex justify-center">
                         <div className="bg-white/90 backdrop-blur-sm rounded-[24px] shadow-[0_10px_32px_rgba(0,0,0,0.10)] border-2 border-[#555555]/50 px-6 sm:px-8 py-6 sm:py-7 max-w-[560px] w-full min-h-[360px]">
-                            <form className="space-y-3 sm:space-y-4" onSubmit={(e) => e.preventDefault()} aria-label="Contact form">
+                            <form className="space-y-3 sm:space-y-4" onSubmit={handleSubmit} aria-label="Contact form" noValidate>
+                                {status === "success" && (
+                                    <div className="rounded-xl border-2 border-green-500 bg-green-50 px-4 py-3 text-left" role="status" aria-live="polite">
+                                        <p className="text-[15px] font-semibold text-green-800">{t.submitSuccessTitle}</p>
+                                        <p className="text-[13px] text-green-700">{t.submitSuccessDescription}</p>
+                                    </div>
+                                )}
                                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                                     <label className="block">
                                         <span className="sr-only">{t.yourName}</span>
                                         <input
                                             type="text"
                                             name="name"
+                                            value={formData.name}
+                                            onChange={handleChange("name")}
                                             placeholder={t.yourName}
                                             className="w-full rounded-[18px] border-2 border-[#f0df20] bg-white px-4 py-3 text-[14px] text-black placeholder:text-black/70 focus:outline-none"
                                             aria-label={t.yourName}
@@ -117,9 +206,12 @@ function ContactFooter() {
                                         <input
                                             type="email"
                                             name="email"
+                                            value={formData.email}
+                                            onChange={handleChange("email")}
                                             placeholder={t.yourEmail}
                                             className="w-full rounded-[18px] border-2 border-[#f0df20] bg-white px-4 py-3 text-[14px] text-black placeholder:text-black/70 focus:outline-none"
                                             aria-label={t.yourEmail}
+                                            aria-invalid={Boolean(errorMessage)}
                                         />
                                     </label>
                                 </div>
@@ -127,14 +219,25 @@ function ContactFooter() {
                                     <span className="sr-only">{t.yourMessage}</span>
                                     <textarea
                                         name="message"
+                                        value={formData.message}
+                                        onChange={handleChange("message")}
                                         placeholder={t.yourMessage}
                                         className="w-full min-h-[140px] rounded-[18px] border-2 border-[#f0df20] bg-white px-4 py-3 text-[14px] text-black placeholder:text-black/70 focus:outline-none"
                                         aria-label={t.yourMessage}
                                     />
                                 </label>
+                                {errorMessage && (
+                                    <p className="text-[13px] text-red-600" role="alert" aria-live="assertive">
+                                        {errorMessage}
+                                    </p>
+                                )}
                                 <div className="flex items-center justify-center sm:justify-start">
-                                    <button type="submit" className="inline-flex items-center justify-center rounded-[18px] bg-[#f0df20] px-7 py-2.5 text-[14px] font-medium text-black shadow-sm hover:bg-[#f0df20]/90">
-                                        {t.sendMessage}
+                                    <button
+                                        type="submit"
+                                        className="inline-flex items-center justify-center rounded-[18px] bg-[#f0df20] px-7 py-2.5 text-[14px] font-medium text-black shadow-sm hover:bg-[#f0df20]/90 disabled:cursor-not-allowed disabled:opacity-60"
+                                        disabled={status === "loading"}
+                                    >
+                                        {status === "loading" ? `${t.sendMessage}...` : t.sendMessage}
                                     </button>
                                 </div>
                             </form>

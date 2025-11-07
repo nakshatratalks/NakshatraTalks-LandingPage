@@ -556,11 +556,24 @@ export default function ChatPageClient() {
     }
   }, [searchParams, lang, sendMessage]);
 
-  const handleWaitlistSubmit = useCallback((email: string) => {
-    // TODO: Wire up with backend later
-    console.log("Waitlist submission:", email);
-    // For now, just log it
-  }, []);
+  const handleWaitlistSubmit = useCallback(async (email: string) => {
+    const response = await fetch("/api/waitlist", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        email,
+        language: lang,
+        source: "chatbot-waitlist",
+      }),
+    });
+
+    const data = (await response.json().catch(() => null)) as { error?: string } | null;
+
+    if (!response.ok) {
+      const fallback = lang === "ta" ? "காத்திருப்புப் பட்டியலில் சேர முடியவில்லை." : "Unable to join the waitlist.";
+      throw new Error(data?.error || fallback);
+    }
+  }, [lang]);
 
   return (
     <ChatShell backgroundParticles>

@@ -35,7 +35,7 @@ const SERVICES = [
 ];
 
 // Placeholder for WhatsApp number - replace with actual number later
-const WHATSAPP_NUMBER = ""; // Format: 911234567890 (country code + number, no + or spaces)
+const WHATSAPP_NUMBER: string = ""; // Format: 911234567890 (country code + number, no + or spaces)
 
 interface WhatsAppFormProps {
   onClose: () => void;
